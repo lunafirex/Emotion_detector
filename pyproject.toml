@@ -9,4 +9,5 @@ dependencies = [
     "google-generativeai>=0.8.5",
     "jupyterlab>=4.4.5",
     "pillow>=11.3.0",
+    "python-dotenv>=1.1.1",
 ]

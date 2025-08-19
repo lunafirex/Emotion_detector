@@ -9,12 +9,17 @@ from pathlib import Path
 import base64
 import io
 from PIL import Image
+from dotenv import load_dotenv
+
 
 app =  Flask(__name__)
 
+load_dotenv(dotenv_path=".")
+secret_key = os.getenv("GEMINI_API_KEY")
+
 def setup_gemini_api():
 
-    api_key = "AIzaSyA4tiLvv2wajS0FEy2a1BwSqmdTQPNPHKA"
+    api_key = secret_key
     genai.configure(api_key=api_key)
     return genai
 
