@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+    <title>Emotion Detector - LunaFireX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .main-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .upload-section, .detection-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .upload-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .detection-result {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .emotion-emoji {
+            font-size: 120px;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .emotion-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            text-transform: capitalize;
+        }
+
+        .no-detection {
+            color: #999;
+            font-style: italic;
+        }
+
+        .emotions-grid {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .emotions-title {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #333;
+        }
+
+        .emotions-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .emotion-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .emotion-item.active {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .emotion-item-emoji {
+            font-size: 48px;
+            margin-bottom: 0.5rem;
+        }
+
+        .emotion-item-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            margin: 2rem 0;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .title {
+                font-size: 24px;
+            }
+            
+            .company-name {
+                font-size: 18px;
+            }
+            
+            .emotions-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="{{ url_for('static', filename='lunafirex.jpg') }}" width="50" height="50" style="border-radius: 35px; border-color: white;" alt="">
+                </div>
+                <h1 class="title">Emotion Detector</h1>
+            </div>
+            <div class="company-name">LunaFireX</div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="main-section">
+            <div class="upload-section">
+                <h2 class="section-title">Upload Image</h2>
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Drag & drop your image here</div>
+                    <button class="upload-button" onclick="document.getElementById('file-input').click()">
+                        Choose File
+                    </button>
+                    <input type="file" id="file-input" accept="image/*">
+                </div>
+                <div id="image-preview"></div>
+            </div>
+
+            <div class="detection-section">
+                <h2 class="section-title">Detection Result</h2>
+                <div class="loading" id="loading">Analyzing emotion...</div>
+                <div class="detection-result" id="detection-result">
+                    <span class="emotion-emoji no-detection">🤔</span>
+                    <div class="emotion-text no-detection">Upload an image to detect emotion</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="emotions-grid">
+            <h3 class="emotions-title">All Emotions</h3>
+            <div class="emotions-list">
+                <div class="emotion-item" data-emotion="happiness">
+                    <div class="emotion-item-emoji">😊</div>
+                    <div class="emotion-item-name">Happiness</div>
+                </div>
+                <div class="emotion-item" data-emotion="sadness">
+                    <div class="emotion-item-emoji">😢</div>
+                    <div class="emotion-item-name">Sadness</div>
+                </div>
+                <div class="emotion-item" data-emotion="fear">
+                    <div class="emotion-item-emoji">😨</div>
+                    <div class="emotion-item-name">Fear</div>
+                </div>
+                <div class="emotion-item" data-emotion="anger">
+                    <div class="emotion-item-emoji">😠</div>
+                    <div class="emotion-item-name">Anger</div>
+                </div>
+                <div class="emotion-item" data-emotion="surprise">
+                    <div class="emotion-item-emoji">😲</div>
+                    <div class="emotion-item-name">Surprise</div>
+                </div>
+                <div class="emotion-item" data-emotion="disgust">
+                    <div class="emotion-item-emoji">🤢</div>
+                    <div class="emotion-item-name">Disgust</div>
+                </div>
+                <div class="emotion-item" data-emotion="neutral">
+                    <div class="emotion-item-emoji">😐</div>
+                    <div class="emotion-item-name">Neutral</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // EXPOSED VARIABLE FOR BACKEND INTEGRATION
+        let emotion_result = null; // Your backend should set this variable
+
+        // Emotion mapping
+        const emotionMap = {
+            happiness: { emoji: '😊', name: 'Happiness' },
+            sadness: { emoji: '😢', name: 'Sadness' },
+            fear: { emoji: '😨', name: 'Fear' },
+            anger: { emoji: '😠', name: 'Anger' },
+            surprise: { emoji: '😲', name: 'Surprise' },
+            disgust: { emoji: '🤢', name: 'Disgust' },
+            neutral: {emoji: '😐', name: 'Neutral'}
+        };
+
+        // File upload handling
+        const fileInput = document.getElementById('file-input');
+        const uploadArea = document.getElementById('upload-area');
+        const imagePreview = document.getElementById('image-preview');
+        const loading = document.getElementById('loading');
+        const detectionResult = document.getElementById('detection-result');
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Display image preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="preview-image">`;
+            };
+            reader.readAsDataURL(file);
+
+            // Show loading state
+            showLoading();
+
+            // Create FormData and send to backend immediately
+            const formdata = new FormData();
+            formdata.append('image', file);
+
+            console.log('Sending file to backend...');
+
+            $.ajax({
+                url: "/engine",
+                type: "POST",
+                data: formdata,                
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    console.log('Backend response:', response);
+                    
+                    // Get the result from your backend response
+                    var the_result = response.result;
+                    console.log('Detected emotion:', the_result);
+                    
+                    // Set the emotion result from backend
+                    emotion_result = the_result;
+                    
+                    // Update the UI with the result
+                    updateDetectionResult();
+                    hideLoading();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Upload failed:', error);
+                    console.error('Status:', status);
+                    console.error('Response text:', xhr.responseText);
+                    
+                    // Hide loading and show error state
+                    hideLoading();
+                    detectionResult.innerHTML = `
+                        <span class="emotion-emoji no-detection">❌</span>
+                        <div class="emotion-text no-detection">Error processing image</div>
+                    `;
+                }
+            });
+        }
+
+        function showLoading() {
+            loading.classList.add('show');
+            detectionResult.style.display = 'none';
+        }
+
+        function hideLoading() {
+            loading.classList.remove('show');
+            detectionResult.style.display = 'block';
+        }
+
+        function updateDetectionResult() {
+            // Clear all active states
+            document.querySelectorAll('.emotion-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (emotion_result && emotionMap[emotion_result.toLowerCase()]) {
+                const emotion = emotionMap[emotion_result.toLowerCase()];
+                
+                // Update detection display
+                detectionResult.innerHTML = `
+                    <span class="emotion-emoji">${emotion.emoji}</span>
+                    <div class="emotion-text">${emotion.name}</div>
+                `;
+
+                // Highlight the detected emotion in the grid
+                const emotionItem = document.querySelector(`[data-emotion="${emotion_result.toLowerCase()}"]`);
+                if (emotionItem) {
+                    emotionItem.classList.add('active');
+                }
+            } else {
+                // No detection or invalid result
+                detectionResult.innerHTML = `
+                    <span class="emotion-emoji no-detection">❓</span>
+                    <div class="emotion-text no-detection">No emotion detected</div>
+                `;
+            }
+        }
+
+        // Function to manually update emotion (for backend integration)
+        function setEmotionResult(emotion) {
+            emotion_result = emotion;
+            updateDetectionResult();
+        }
+
+        // Example usage for backend integration:
+        // After your backend processes the image and returns a result, call:
+        // setEmotionResult('happiness'); // or any other emotion
+        
+        console.log('Emotion Detector initialized. Use setEmotionResult(emotion) to update the display.');
+        console.log('Available emotions:', Object.keys(emotionMap));
+    </script>
+</body>
+</html>
